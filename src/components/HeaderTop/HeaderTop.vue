@@ -9,11 +9,12 @@
 </template>
 
 <script>
-export default {
+  import { mapState } from "vuex";
+  export default {
     props: {
         title: String
     }
-}
+  }
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
