@@ -18,7 +18,7 @@ export default {
             commit(RECEIVE_ADDRESS, {address: addresss});
         }
     },
-    async getFoodCategorys ({commit}) {
+    async getCategorys ({commit}) {
         const result = await reqFoodCategorys();
         if(result.code === 0) {
             const categorys = result.data;
