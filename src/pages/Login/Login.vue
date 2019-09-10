@@ -40,7 +40,7 @@
                 </section>
                 <section class="login_message">
                   <input type="text" maxlength="11" placeholder="验证码" v-model="captcha">
-                  <img class="get_verification" src="http://localhost:4000/captcha" @click="getCaptcha" alt="captcha">
+                  <img class="get_verification" src="http://localhost:4000/captcha" @click="getCaptcha" alt="captcha" ref="captcha">
                 </section>
               </section>
             </div>
@@ -116,30 +116,52 @@ export default {
         this.alertText = ''
       },
       //登录
-      login() {
+      async login() {
+        let result;
         if(this.loginWay) { //短信登录
           const {rightPhone, phone, code} = this
           if(!this.rightPhone) {
             //手机号不正确
             this.showAlert('手机号不正确')
+            return
           } else if(!/^\d{6}$/.test(code)) {
             //验证码必须是6位数字
             this.showAlert('验证码必须是6位数字')
+            return
           }
+          // 发送ajax请求 短信登录
+          result = await reqSmsLogin(phone, code)
         } else { //用户名登录
           const {name, pwd, captcha} = this
           if(!this.name) {
             this.showAlert('用户名不正确')
+            return
           } else if (!this.pwd) {
             this.showAlert('密码不正确')
+            return
           } else if (!this.captcha) {
             this.showAlert('验证码不正确')
+            return
           }
+          // ajax 密码登录
+          result = await reqPwdLogin({name, pwd, captcha})
+        }
+        // 根据结果数据显示
+        if(result.code === 0) {
+          const user = result.data
+          //将user保存到vuex的state
+          this.$store.dispatch('recordUser', user)
+          // 去个人中心页面
+          this.$router.replace('./profile')
+        } else {
+          const msg = result.msg
+          this.showAlert(msg)
+          this.getCaptcha();
         }
       },
       //获取图形验证码
-      getCaptcha(e) {
-        e.target.src = 'http://localhost:4000/captcha?time=' + Date.now();
+      getCaptcha() {
+        this.$refs.captcha.src = 'http://localhost:4000/captcha?time=' + Date.now();
       }
     }
 }
